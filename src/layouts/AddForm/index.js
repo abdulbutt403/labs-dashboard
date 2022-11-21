@@ -39,19 +39,22 @@ import MDBadge from "components/MDBadge";
 import jwt from "jwt-decode";
 import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
+import { UploadFile } from "@mui/icons-material";
 
 function Pharmacies() {
   const isMobile = useMediaQuery({ query: "(max-width: 786px)" });
   const [medicine, setMedicine] = useState(false);
-  const [data, setData] = useState([]);
+  const [Identifier, setIdentier] = useState("");
   const [stocks, setStocks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedId, setSelectedId] = useState("");
   const [selectedName, setSelectedName] = useState("");
+  const [selectedImage, setSelectedImage] = useState("");
   const isAuth = useSelector((store) => store.root.user.authenticated);
 
   console.log(isAuth);
 
+  const [original_filename, setFileName] = useState("");
   const [quant, setQuant] = React.useState(0);
   const [rowData, setRowData] = React.useState(null);
   const dispatch = useDispatch();
@@ -110,11 +113,44 @@ function Pharmacies() {
         Price: price,
       };
 
-      console.log({payload})
+      console.log({ payload });
       const posts = await axios.post(endPoint + "/users/addMedicine", payload);
       toast.success("Successfully Entered Medicine");
       console.log({ posts });
       setLoading(false);
+    }
+  };
+
+  const handleUploads = () => {
+    var myWidget = window.cloudinary.createUploadWidget(
+      {
+        cloudName: "dmsus6w9v",
+        uploadPreset: "fvofnssw",
+      },
+      (error, result) => {
+        if (!error && result && result.event === "success") {
+          console.log("Done! Here is the image info: ", result.info);
+          setSelectedImage(result.info.secure_url);
+          setFileName(result.info.original_filename);
+        }
+      }
+    );
+    myWidget.open();
+  };
+
+  const completeOrder = async () => {
+    const body = { Identifier, Image: selectedImage };
+    console.log({ body });
+    const result = await axios.post(endPoint + "/users/createReport", body);
+    console.log({result})
+    if(result.data.success === "duplicate"){
+      toast.error("Choose a unique number")
+    }
+    else{
+      toast.success("Successfully Uploaded...");
+      setFileName("")
+      setSelectedImage("")
+      setIdentier("")
     }
   };
 
@@ -129,43 +165,44 @@ function Pharmacies() {
               <Card style={{ padding: "7%" }}>
                 <MDBox mb={2}>
                   <MDInput
-                    type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    label="Title"
-                    variant="standard"
-                    fullWidth
-                  />
-                </MDBox>
-                <MDBox mb={2}>
-                  <MDInput
                     type="number"
-                    label="Quantity"
+                    value={Identifier}
+                    onChange={(e) => setIdentier(e.target.value)}
+                    label="UNIQUE REQUEST ID"
                     variant="standard"
                     fullWidth
-                    value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
                   />
                 </MDBox>
-                <MDBox mb={2}>
-                  <MDInput
-                    type="number"
-                    label="Price (Per Tablet)"
-                    variant="standard"
-                    fullWidth
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                  />
-                </MDBox>
-
+                <div style={{ display: "flex", alignItems: "end" }}>
+                  <button
+                    id="upload_widget"
+                    onClick={handleUploads}
+                    className="cloudinary-button"
+                  >
+                    Choose File
+                  </button>
+                  {original_filename !== 0 && original_filename !== "" && (
+                    <span
+                      style={{ fontSize: 12, fontWeight: "600", marginLeft: 6 }}
+                    >
+                      {original_filename}
+                    </span>
+                  )}
+                </div>
                 <MDBox mt={4} mb={1}>
                   <MDButton
                     variant="gradient"
                     color="info"
                     fullWidth
-                    onClick={() => createMedicine({ title, quantity, price })}
+                    disabled={
+                      original_filename === "" ||
+                      original_filename === 0 ||
+                      Identifier.length === 0 ||
+                      Identifier === ""
+                    }
+                    onClick={() => completeOrder()}
                   >
-                    ADD MEDICINE
+                    UPLOAD TO DATABASE
                   </MDButton>
                 </MDBox>
               </Card>

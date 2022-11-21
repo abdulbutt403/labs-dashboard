@@ -86,8 +86,8 @@ function Tables() {
     else {
       const decoded = jwt(token);
       setLoading(true);
-      const posts = await axios.post(endPoint + "/users/orderByPharmacy", {
-        pharmacyId: decoded.id,
+      const posts = await axios.post(endPoint + "/users/requestsByLab", {
+        labId: decoded.id,
       });
       console.log({ posts });
       setData(posts.data.orders);
@@ -110,12 +110,12 @@ function Tables() {
       const decoded = jwt(token);
       const body = {
         orderId: rowData.Identifier,
-        pharmacyId: decoded.id,
+        labId: decoded.id,
         status: "REJECTED",
         patientEmail: rowData.patientEmail,
       };
       console.log({ body });
-      const posts = await axios.post(endPoint + "/users/orderUpdate", body);
+      const posts = await axios.post(endPoint + "/users/requestUpdate", body);
       toast.success("Marked as Rejected.", {
         style: {
           border: "1px solid orange",
@@ -140,12 +140,12 @@ function Tables() {
       const decoded = jwt(token);
       const body = {
         orderId: rowData.Identifier,
-        pharmacyId: decoded.id,
-        status: "DELIVERED",
+        labId: decoded.id,
+        status: "COMPLETED",
         patientEmail: rowData.patientEmail,
       };
       console.log({ body });
-      const posts = await axios.post(endPoint + "/users/orderUpdate", body);
+      const posts = await axios.post(endPoint + "/users/requestUpdate", body);
       toast.success("Marked as completed");
       console.log({ posts });
       setLoading(false);
@@ -179,7 +179,7 @@ function Tables() {
                     coloredShadow="info"
                   >
                     <MDTypography variant="h6" color="white">
-                      Orders
+                      Requests
                     </MDTypography>
                   </MDBox>
                   <MDBox pt={3}>
@@ -188,12 +188,16 @@ function Tables() {
                       title=""
                       columns={[
                         {
-                          title: "Pharmacy",
-                          field: "pharmacyName",
+                          title: "UNIQUE ID",
+                          field: "Identifier",
                         },
                         {
-                          title: "Ordered By",
+                          title: "Requested By",
                           field: "patientEmail",
+                        },
+                        {
+                          title: "Requested Date",
+                          field: "Date_Requested",
                         },
                         {
                           title: "Status",
@@ -207,7 +211,7 @@ function Tables() {
                                   size="lg"
                                 />
                               )}
-                              {rowData.state === "DELIVERED" && (
+                              {rowData.state === "COMPLETED" && (
                                 <MDBadge
                                   badgeContent={rowData.state}
                                   color="info"
@@ -227,124 +231,35 @@ function Tables() {
                           ),
                         },
                         {
-                          title: "Ordered At",
+                          title: "Requested At",
                           render: (rowData) => (
                             <span className="mt_dt">
                               {moment(rowData.createdAt).format(
-                                "dddd, MMMM Do YYYY"
+                                "dddd, MMMM Do YYYY",
                               )}
                             </span>
                           ),
                         },
                         {
-                          title: "Medicines",
-                          render: (rowData) => (
-                            <span className="mt_dt">
-                              {rowData.Medicines.length} Medicines
-                            </span>
-                          ),
+                          title: "Reason",
+                          field: "Reason",
                         },
                       ]}
+                      data={data}
                       actions={[
                         {
-                          icon: () => <Search />,
-                          tooltip: "See medicines",
-                          onClick: (event, rowData) =>
-                            openPharmacy(event, rowData),
-                        },
-                        {
                           icon: () => <Clear />,
-                          tooltip: "Rejected order",
+                          tooltip: "Reject request",
                           onClick: (event, rowData) =>
                             rejectOrder(event, rowData),
                         },
                         {
                           icon: () => <Check />,
-                          tooltip: "Mark as Delivered",
+                          tooltip: "Mark as Completed",
                           onClick: (event, rowData) =>
                             completeOrder(event, rowData),
                         },
                       ]}
-                      data={data}
-                      options={{
-                        actionsColumnIndex: -1,
-                        headerStyle: {
-                          backgroundColor: "transparent",
-                          color: "#7b809a",
-                          fontSize: "0.8rem",
-                          opacity: 0.7,
-                          fontStyle: "normal",
-                          fontWeight: 700,
-                          textTransform: "uppercase",
-                        },
-                      }}
-                    />
-                  </MDBox>
-                </Card>
-              </Grid>
-            )}
-
-            {medicine && (
-              <Grid item xs={12}>
-                <Card>
-                  <MDBox
-                    mx={0}
-                    mt={-3}
-                    py={3}
-                    px={2}
-                    style={{
-                      display: "flex",
-                      width: "100%",
-                      justifyContent: "space-between",
-                    }}
-                    variant="gradient"
-                    bgColor="info"
-                    borderRadius="lg"
-                    coloredShadow="info"
-                  >
-                    <MDTypography variant="h6" color="white">
-                      Medicines
-                    </MDTypography>
-                    <button
-                      style={{
-                        background: "transparent",
-                        cursor: "pointer",
-                        border: "none",
-                        outline: "none",
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                      onClick={() => setMedicine(false)}
-                    >
-                      <ChevronLeft style={{ color: "#fff", fontSize: 26 }} />
-                      <MDTypography variant="span" color="white">
-                        Back To Orders
-                      </MDTypography>
-                    </button>
-                  </MDBox>
-                  <MDBox pt={3}>
-                    <MaterialTable
-                      icons={tableIcons}
-                      title=""
-                      columns={[
-                        {
-                          title: "Identifier",
-                          field: "_id",
-                        },
-                        {
-                          title: "Name",
-                          field: "Title",
-                        },
-                        {
-                          title: "Stock",
-                          field: "Quantity",
-                        },
-                        {
-                          title: "Price (Per Tablet)",
-                          field: "Price",
-                        },
-                      ]}
-                      data={stocks}
                       options={{
                         actionsColumnIndex: -1,
                         headerStyle: {

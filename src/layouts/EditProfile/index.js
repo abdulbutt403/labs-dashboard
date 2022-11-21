@@ -98,10 +98,10 @@ function EditProfile() {
       const decoded = jwt(token);
       setLoading(true);
       const payload = {
-        pharmacyId: decoded.id,
+        labId: decoded.id,
       };
 
-      const posts = await axios.post(endPoint + "/users/getPharmacy", payload);
+      const posts = await axios.post(endPoint + "/users/getLab", payload);
       console.log({ posts });
       setEmail(posts.data.email);
       setfullName(posts.data.fullName);
@@ -117,9 +117,10 @@ function EditProfile() {
     else {
       const decoded = jwt(token);
       setLoading(true);
-      const payload = { pharmacyId : decoded.id, email, password, fullName, address };
-      const posts = await axios.post(endPoint + "/users/editPharmacy", payload);
+      const payload = { labId : decoded.id, email, password, fullName, address };
+      const posts = await axios.post(endPoint + "/users/editLab", payload);
       console.log({ posts });
+      toast.success('Profile Updated Successfully')
       setLoading(false);
     }
   };

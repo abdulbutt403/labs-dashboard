@@ -32,10 +32,10 @@ function Cover() {
           address: address
         });
         if (res.data.success) {
-          toast.success("Successfully Registered Pharmacy");
+          toast.success("Successfully Registered Lab");
         }
         if (res.data.msg.length) {
-          toast.error(`Pharmacy already exist`);
+          toast.error(`Lab already exist`);
         }
       } catch (error) {
         console.log(error);
