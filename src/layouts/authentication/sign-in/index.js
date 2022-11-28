@@ -130,18 +130,7 @@ function Basic() {
                 fullWidth
               />
             </MDBox>
-            <MDBox display="flex" alignItems="center" ml={-1}>
-              <Switch checked={rememberMe} onChange={handleSetRememberMe} />
-              <MDTypography
-                variant="button"
-                fontWeight="regular"
-                color="text"
-                onClick={handleSetRememberMe}
-                sx={{ cursor: "pointer", userSelect: "none", ml: -1 }}
-              >
-                &nbsp;&nbsp;Remember me
-              </MDTypography>
-            </MDBox>
+            <div style={{textAlign: 'end'}}><p style={{fontSize: 12, color: 'red', textDecoration: 'underline', cursor: 'pointer'}}>forgot password ?</p></div>
             <MDBox mt={4} mb={1}>
               <MDButton
                 variant="gradient"
