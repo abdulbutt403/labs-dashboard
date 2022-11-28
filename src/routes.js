@@ -5,6 +5,7 @@ import SignUp from "layouts/authentication/sign-up";
 import Icon from "@mui/material/Icon";
 import Pharmacies from "layouts/Pharmacies";
 import AddForm from "layouts/AddForm";
+import Tests from "layouts/Tests";
 import EditProfile from "layouts/EditProfile";
 
 const routes = [
@@ -31,6 +32,14 @@ const routes = [
     icon: <Icon fontSize="small">assignment</Icon>,
     route: "/form",
     component: <AddForm />,
+  },
+  {
+    type: "collapse",
+    name: "Add Test",
+    key: "add_test",
+    icon: <Icon fontSize="small">receipt</Icon>,
+    route: "/test",
+    component: <Tests />,
   },
   {
     type: "collapse",

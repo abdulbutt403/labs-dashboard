@@ -30,7 +30,7 @@ import React, { forwardRef, useState, useEffect } from "react";
 import axios from "axios";
 import { endPoint } from "contants";
 import { useMediaQuery } from "react-responsive";
-import { Button, MenuItem, Select } from "@mui/material";
+import { Button } from "@mui/material";
 import toast, { Toaster } from "react-hot-toast";
 import { setPharmacies } from "shared/reducers/UserSlice";
 import { cartAdd } from "shared/reducers/UserSlice";
@@ -42,13 +42,11 @@ import MDButton from "components/MDButton";
 import { UploadFile } from "@mui/icons-material";
 
 function Pharmacies() {
-  const isMobile = useMediaQuery({ query: "(max-width: 786px)" });
-  const [medicine, setMedicine] = useState(false);
   const [Identifier, setIdentier] = useState("");
-  const [stocks, setStocks] = useState([]);
+  const [title, setTitle] = useState("");
+  const [description, setDesc] = useState("");
+  const [price, setPrice] = useState("");
   const [loading, setLoading] = useState(false);
-  const [selectedId, setSelectedId] = useState("");
-  const [selectedName, setSelectedName] = useState("");
   const [selectedImage, setSelectedImage] = useState("");
   const isAuth = useSelector((store) => store.root.user.authenticated);
 
@@ -91,88 +89,24 @@ function Pharmacies() {
     ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />),
   };
 
-  var [title, setTitle] = useState("");
-  var [quantity, setQuantity] = useState("");
-  var [price, setPrice] = useState("");
-  var [data, setData] = useState([]);
+  
 
-  const createMedicine = async (body) => {
-    const { title, quantity, price } = body;
-
-    console.log({ title, quantity, price });
-
+  const completeOrder = async () => {
     const token = localStorage.getItem("token");
     if (!token) window.location.href = "/authentication/sign-in";
     else {
       const decoded = jwt(token);
-      setLoading(true);
-      const payload = {
-        pharmacyId: decoded.id,
-        Title: title,
-        Quantity: quantity,
-        Identifier: Math.floor(Math.random() * 100 + 1) + Date.now(),
-        Price: price,
-      };
-
-      console.log({ payload });
-      const posts = await axios.post(endPoint + "/users/addMedicine", payload);
-      toast.success("Successfully Entered Medicine");
-      console.log({ posts });
-      setLoading(false);
-    }
-  };
-
-  const handleUploads = () => {
-    var myWidget = window.cloudinary.createUploadWidget(
-      {
-        cloudName: "dmsus6w9v",
-        uploadPreset: "fvofnssw",
-      },
-      (error, result) => {
-        if (!error && result && result.event === "success") {
-          console.log("Done! Here is the image info: ", result.info);
-          setSelectedImage(result.info.secure_url);
-          setFileName(result.info.original_filename);
-        }
-      }
-    );
-    myWidget.open();
-  };
-
-  const completeOrder = async () => {
-    const body = { Identifier, Image: selectedImage };
-    console.log({ body });
-    const result = await axios.post(endPoint + "/users/createReport", body);
-    console.log({ result });
-    if (result.data.success === "duplicate") {
-      toast.error("Choose a unique number");
-    } else {
-      toast.success("Successfully Uploaded...");
+      let labId = decoded.id;
+      const body = { labId, title, description, price };
+      console.log({ body });
+      const result = await axios.post(endPoint + "/users/createTest", body);
+      console.log({ result });
+      toast.success("Successfully Added...");
       setFileName("");
       setSelectedImage("");
       setIdentier("");
     }
   };
-
-  const getOrders = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) window.location.href = "/authentication/sign-in";
-    else {
-      const decoded = jwt(token);
-      setLoading(true);
-      const posts = await axios.post(endPoint + "/users/requestsByLab", {
-        labId: decoded.id,
-      });
-      console.log({ posts });
-      setData(posts.data.orders);
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    getOrders()
-  }, [])
-  
 
   return isAuth ? (
     <React.Fragment>
@@ -183,50 +117,52 @@ function Pharmacies() {
           <Grid container spacing={6}>
             <Grid item xs={6} style={{ margin: "auto" }}>
               <Card style={{ padding: "7%" }}>
-                <p style={{fontSize: 14, color: "#000", textTransform: 'uppercase', transform: 'translateY(15px)' }}>Select Report ID</p>
-                <Select
-                  style={{
-                    width: "100%",
-                    marginTop: 30,
-                    height: 40,
-                    marginBottom: 20,
-                  }}
-                  value={Identifier}
-                  placeholder={`Select Report ID`}
-                  onChange={(e) => setIdentier(e.target.value)}
-                >
-                  {data.map((e,i) => (<MenuItem key={i} value={e.Identifier}>{e.Identifier}</MenuItem>))}
-                </Select>
-                <div style={{ display: "flex", alignItems: "end" }}>
-                  <button
-                    id="upload_widget"
-                    onClick={handleUploads}
-                    className="cloudinary-button"
-                  >
-                    Choose File
-                  </button>
-                  {original_filename !== 0 && original_filename !== "" && (
-                    <span
-                      style={{ fontSize: 12, fontWeight: "600", marginLeft: 6 }}
-                    >
-                      {original_filename}
-                    </span>
-                  )}
-                </div>
+                <MDBox mb={2}>
+                  <MDInput
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    label="Title"
+                    variant="standard"
+                    fullWidth
+                  />
+                </MDBox>
+                <MDBox mb={2}>
+                  <MDInput
+                    type="text"
+                    value={description}
+                    onChange={(e) => setDesc(e.target.value)}
+                    label="Description"
+                    variant="standard"
+                    fullWidth
+                  />
+                </MDBox>
+                <MDBox mb={2}>
+                  <MDInput
+                    type="number"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    label="Price"
+                    variant="standard"
+                    fullWidth
+                  />
+                </MDBox>
                 <MDBox mt={4} mb={1}>
                   <MDButton
                     variant="gradient"
                     color="info"
                     fullWidth
                     disabled={
-                      original_filename === "" ||
-                      original_filename === 0 ||
-                      Identifier.length === 0 ||
-                      Identifier === ""
+                      title === "" ||
+                      title === 0 ||
+                      description.length === 0 ||
+                      description === "" ||
+                      price.length === 0 ||
+                      price === ""
                     }
                     onClick={() => completeOrder()}
                   >
-                    UPLOAD TO DATABASE
+                    ADD TEST
                   </MDButton>
                 </MDBox>
               </Card>
