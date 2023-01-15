@@ -14,12 +14,9 @@ import { MenuItem, Select } from "@mui/material";
 import toast, { Toaster } from "react-hot-toast";
 
 function Cover() {
-  var [email, setEmail] = useState("admin@pharmacist.com");
-  var [fullName, setfullName] = useState("admin@pharmacist.com");
-  var [password, setPassword] = useState("");
-  var [phoneNumber, setPhoneNumber] = useState("");
-  var [address, setAddress] = useState("");
-  var [role, setRole] = useState("LAB");
+  var [email, setEmail] = useState("");
+  var [code, setCode] = useState("");
+  var [role, setRole] = useState("DOCTOR");
   const [checked, setChecked] = React.useState(true);
   const [terms, setTerms] = React.useState(false);
 
@@ -35,29 +32,24 @@ function Cover() {
     return false;
   }
 
-  async function createUser(login, password, fullName, role) {
-    if (!ValidateEmail(login)) {
+
+  async function VerifyUser() {
+    let body = {email,code,role}
+    if (!ValidateEmail(email)) {
       toast.error(`Please Enter a valid email..!`);
-    } else if (!checked) {
-      toast.error(`Please Agree to terms and conditions`);
-    } else if (!!login && !!password && !!role && phoneNumber) {
+    } 
+    else if (!!email && !!code && !!role) {
       try {
-        const res = await axios.post(endPoint + "/users/create", {
-          email: login,
-          password: password,
-          role: role,
-          fullName: fullName,
-          address: address,
-          phoneNumber: phoneNumber
-        });
+        const res = await axios.post(endPoint + "/users/verify", body);
+        console.log({res})
         if (res.data.success) {
-          toast.success("A verification code is sent to your email");
+          toast.success("Successfully Verified");
           setTimeout(() => {
-            window.location.href = '/authentication/verify'
+            window.location.href = '/authentication/sign-in'
           }, 1500);
         }
-        if (res.data.msg.length) {
-          toast.error(`Lab already exist`);
+        else{
+          toast.error("Verification Unsuccessful");
         }
       } catch (error) {
         console.log(error);
@@ -68,6 +60,7 @@ function Cover() {
       toast.error(`Please Check Your Fields...`);
     }
   }
+
 
   return (
     <React.Fragment>
@@ -85,15 +78,15 @@ function Cover() {
             textAlign="center"
           >
             <MDTypography variant="h4" fontWeight="medium" color="white" mt={1}>
-              Join us today
+              Account Verification
             </MDTypography>
             <MDTypography display="block" variant="button" color="white" my={1}>
-              Enter your email and password to register
+              Enter 6 digit verification code
             </MDTypography>
           </MDBox>
           <MDBox pt={4} pb={3} px={3}>
             <MDBox component="form" role="form">
-              <Select
+            <Select
                 style={{
                   width: "100%",
                   marginTop: 30,
@@ -105,17 +98,7 @@ function Cover() {
               >
                 <MenuItem value={"LAB"}>LAB</MenuItem>
               </Select>
-              <MDBox mb={2}>
-                <MDInput
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setfullName(e.target.value)}
-                  label="Name"
-                  variant="standard"
-                  fullWidth
-                />
-              </MDBox>
-              <MDBox mb={2}>
+            <MDBox mb={2}>
                 <MDInput
                   type="email"
                   label="Email"
@@ -127,101 +110,38 @@ function Cover() {
               </MDBox>
               <MDBox mb={2}>
                 <MDInput
-                  type="password"
-                  label="Password"
-                  variant="standard"
-                  fullWidth
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </MDBox>
-              <MDBox mb={2}>
-                <MDInput
                   type="text"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  label="Address"
+                  value={code}
+                  onChange={(e) => {
+                    setCode(e.target.value)
+                  }}
+                  label="code"
                   variant="standard"
                   fullWidth
                 />
-              </MDBox>
-              <MDBox mb={2}>
-                <MDInput
-                  type="text"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  label="Phone (with country code e.g +92)"
-                  variant="standard"
-                  fullWidth
-                />
-              </MDBox>
-              <MDBox display="flex" alignItems="center" ml={-1}>
-                <Checkbox
-                  checked={checked}
-                  onChange={handleChange}
-                  inputProps={{ "aria-label": "controlled" }}
-                />
-                <MDTypography
-                  variant="button"
-                  fontWeight="regular"
-                  color="text"
-                  sx={{ cursor: "pointer", userSelect: "none", ml: -1 }}
-                >
-                  &nbsp;&nbsp;I agree the&nbsp;
-                </MDTypography>
-                <MDTypography
-                  component="a"
-                  href="#"
-                  variant="button"
-                  fontWeight="bold"
-                  color="info"
-                  textGradient
-                  onClick={()=> setTerms(true)}
-                >
-                  Terms and Conditions
-                </MDTypography>
               </MDBox>
               <MDBox mt={4} mb={1}>
                 <MDButton
                   variant="gradient"
                   color="info"
                   fullWidth
-                  onClick={() => createUser(email, password, fullName, role)}
+                  onClick={() => VerifyUser()}
                 >
-                  sign up
+                  verify account
                 </MDButton>
-              </MDBox>
-              <MDBox mt={3} mb={1} textAlign="center">
-                <MDTypography variant="button" color="text">
-                  Already have an account?{" "}
-                  <MDTypography
-                    component={Link}
-                    to="/authentication/sign-in"
-                    variant="button"
-                    color="info"
-                    fontWeight="medium"
-                    textGradient
-                  >
-                    Sign In
-                  </MDTypography>
-                </MDTypography>
               </MDBox>
             </MDBox>
           </MDBox>
         </Card>
       </CoverLayout>
+
       <>
-        <div
-          className={terms ? "overlay open" : "overlay"}
-          style={{ padding: "3rem" }}
-        >
+        <div className={terms? "overlay open": "overlay"} style={{padding: '3rem'}}>
           <div className="container">
             <div className="row">
               <div className="col-xs-12 col-sm-8 col-sm-offset-2">
                 <div className="titles">
-                  <h1 className="title">
-                    Terms & Conditions and Privacy Notice
-                  </h1>
+                  <h1 className="title">Terms & Conditions and Privacy Notice</h1>
                   <h2 className="subtitle">
                     To create an account with Tiger Staffing, please read and
                     agree to our Terms & Conditions and Privacy Notice
@@ -460,11 +380,7 @@ function Cover() {
                     className="legal__rules"
                     aria-expanded="false"
                     aria-hidden="true"
-                    style={{
-                      display: "none",
-                      opacity: 0,
-                      filter: "alpha(opacity=0)",
-                    }}
+                    style={{display: 'none', opacity:0, filter:'alpha(opacity=0)'}}
                   >
                     <div className="legal__rule">
                       <div className="toggle--checkbox">
@@ -482,8 +398,7 @@ function Cover() {
                             </a>
                             and
                             <a href="#">
-                              privacy policy{" "}
-                              <i className="fa fa-external-link"></i>
+                              privacy policy <i className="fa fa-external-link"></i>
                             </a>
                             to continue.
                             <sup>1</sup>
@@ -568,20 +483,13 @@ function Cover() {
                     </div>
                   </div>
 
-                  <div className="legal__actions" style={{ paddingBottom: 50 }}>
-                    <div style={{ float: "right" }}>
+                  <div className="legal__actions" style={{paddingBottom: 50}}>
+                    <div style={{float: 'right'}}>
                       <button
                         type="button"
                         className="btn btn-default overlay--close"
                         onClick={() => setTerms(false)}
-                        style={{
-                          padding: 5,
-                          cursor: "pointer",
-                          background: "#3C95EF",
-                          color: "#fff",
-                          border: "none",
-                          outline: "none",
-                        }}
+                        style={{padding: 5, cursor: 'pointer', background: '#3C95EF', color: '#fff', border: 'none', outline: 'none'}}
                       >
                         I understand
                       </button>

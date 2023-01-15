@@ -72,7 +72,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
 
   // Render all the routes from the routes.js (All the visible items on the Sidenav)
   const renderRoutes = routes
-    .filter((e) => !(e.key === "sign-up" || e.key === "sign-in"))
+    .filter((e) => !(e.key === "sign-up" || e.key === "sign-in" || e.key === 'verify-up'))
     .map(({ type, name, icon, title, noCollapse, key, href, route }) => {
       let returnValue;
 
