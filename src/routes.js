@@ -20,7 +20,7 @@ const routes = [
   },
   {
     type: "collapse",
-    name: "Samopling Requests",
+    name: "Sampling Requests",
     key: "tables",
     icon: <Icon fontSize="small">table_view</Icon>,
     route: "/tables",
